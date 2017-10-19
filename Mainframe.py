@@ -22,7 +22,6 @@ def check_move_right(node):
         return False
 
 
-
 def check_move_left(node):
     if node.positionHappyMan not in [1, 5, 9, 13]:
         return True
@@ -106,7 +105,7 @@ def move_down(node):
 
 
 def reached_goal(node):
-    if node.positionA == 6 and node.positionB == 10 and node.positionC == 14:  # and node.positionHappyMan == 16:
+    if node.positionA == 6 and node.positionB == 10 and node.positionC == 14:
         print("Goal Reached")
         return True
         # print("Total nodes expanded: " + )
@@ -114,7 +113,7 @@ def reached_goal(node):
         # sys.exit()
 
     else:
-        #print("Computer says no")
+        # print("Computer says no")
 
         return False
 
@@ -147,7 +146,7 @@ def get_legal_moves(node):
 class Node(object):
     # node  has state object, stores the state of the board at that node
 
-    def __int__(self):
+    def __init__(self):
         self.parent = None
         self.action = None
         self.positionHappyMan = None
@@ -155,6 +154,8 @@ class Node(object):
         self.positionB = None
         self.positionC = None
         self.depth = None
+        self.nodes_have_expanded = None
+        self.moves_to_do = None
 
 
 def construct_node(node, move):
@@ -177,49 +178,56 @@ def construct_node(node, move):
     constructed_node.positionC = new_cords[2]
     constructed_node.positionHappyMan = new_cords[3]
     constructed_node.action = move
-
+    constructed_node.moves_to_do = get_legal_moves(constructed_node)
+    constructed_node.nodes_have_expanded = []
     return constructed_node
 
-
-def can_node_expand(list_of_nodes, node):
-    moves_possible = get_legal_moves(node)
-
-    for i in list_of_nodes:
-        if i.depth == node.depth + 1 and i.parent == node:
-            moves_possible.remove(i.action)
-
-    return moves_possible
 
 
 def bfs():
     # set the root node here
     root_node = Node()
     root_node.depth = 0
-    # set_node_cords(root_node, [13, 14, 15, 16])
+
     root_node.positionHappyMan = 16
     root_node.positionA = 13
     root_node.positionB = 14
     root_node.positionC = 15
-    nodes_expanded = []
-    node_depth = 0
-    total_nodes_expanded = 0
-    nodes_expanded.append(root_node)
+    tree_expanded = []
+
+    last_node_index = 0
+    root_node.nodes_have_expanded = []
+    root_node.moves_to_do = get_legal_moves(root_node)
+    tree_expanded.append(root_node)
 
     # while not reached_goal(nodes_expanded[-1]):
     while True:
-        for i in nodes_expanded:
-            possible_move = can_node_expand(nodes_expanded, i)
-            if possible_move:
+        for i in range(last_node_index, len(tree_expanded)):
+            if len(tree_expanded[i].nodes_have_expanded) < len(tree_expanded[i].moves_to_do):
                 # new node is expanded here
-                nodes_expanded.append(construct_node(i, possible_move[0]))
-                node_depth = i.depth
-                total_nodes_expanded += 1
+                # actions = list(set(tree_expanded[i].moves_to_do) - set(tree_expanded[i].nodes_have_expanded))
+                if "Move Up" in tree_expanded[i].moves_to_do and "Move Up" not in tree_expanded[i].nodes_have_expanded:
+                    move_done = "Move Up"
+                elif "Move Down" in tree_expanded[i].moves_to_do and "Move Down" not in tree_expanded[
+                    i].nodes_have_expanded:
+                    move_done = "Move Down"
+                elif "Move Left" in tree_expanded[i].moves_to_do and "Move Left" not in tree_expanded[
+                    i].nodes_have_expanded:
+                    move_done = "Move Left"
+                elif "Move Right" in tree_expanded[i].moves_to_do and "Move Right" not in tree_expanded[
+                    i].nodes_have_expanded:
+                    move_done = "Move Right"
+                # tree_expanded.append(construct_node(tree_expanded[i], actions[0]))
+                tree_expanded.append(construct_node(tree_expanded[i], move_done))
+
+                # tree_expanded[i].nodes_have_expanded.append(actions[0])
+                tree_expanded[i].nodes_have_expanded.append(move_done)
+                last_node_index = i
                 break
-            elif node_depth > i.depth:
-                nodes_expanded.remove(i)
-        print("Nodes expanded: " + str(total_nodes_expanded))
-        print("Current Node depth: " + str(nodes_expanded[-1].depth) + " Action done: " + nodes_expanded[-1].action)
-        if (reached_goal(nodes_expanded[-1])):
+
+        print("Nodes expanded: " + str(len(tree_expanded)))
+        print("Current Node depth: " + str(tree_expanded[-1].depth) + " Action done: " + tree_expanded[-1].action)
+        if reached_goal(tree_expanded[-1]):
             print("Algorithm complete")
             break
 
