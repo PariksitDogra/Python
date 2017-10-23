@@ -1,4 +1,5 @@
 import sys
+import random
 
 
 #
@@ -106,6 +107,7 @@ def move_down(node):
 
 def reached_goal(node):
     if node.positionA == 6 and node.positionB == 10 and node.positionC == 14:
+        # if node.positionB == 10:
         print("Goal Reached")
         return True
         # print("Total nodes expanded: " + )
@@ -133,10 +135,13 @@ def get_legal_moves(node):
     legalMoves = []
     if check_move_right(node):
         legalMoves.append("Move Right")
+
     if check_move_down(node):
         legalMoves.append("Move Down")
+
     if check_move_left(node):
         legalMoves.append("Move Left")
+
     if check_move_up(node):
         legalMoves.append("Move Up")
 
@@ -181,6 +186,73 @@ def construct_node(node, move):
     constructed_node.moves_to_do = get_legal_moves(constructed_node)
     constructed_node.nodes_have_expanded = []
     return constructed_node
+
+
+def dfs():
+    root_node = Node()
+    root_node.depth = 0
+
+    root_node.positionHappyMan = 16
+    root_node.positionA = 13
+    root_node.positionB = 14
+    root_node.positionC = 15
+    total_expanded = -1
+    root_node.action = "No action"  # Change action
+
+    stack = [root_node]
+
+    while True:
+        current_node = stack.pop()
+
+        total_expanded += 1
+        print("Nodes expanded: " + str(total_expanded))
+        print("Current Node depth: " + str(current_node.depth) + " Action done: " + current_node.action)
+
+        if reached_goal(current_node):
+            print("Algorithm complete")
+            break
+
+        shuffled_moves = get_legal_moves(current_node)
+        random.shuffle(shuffled_moves)
+
+        for i in shuffled_moves:
+            stack.append(construct_node(current_node, i))
+
+
+def dfs_limited_search(max_depth=15):
+    root_node = Node()
+    root_node.depth = 0
+
+    root_node.positionHappyMan = 16
+    root_node.positionA = 13
+    root_node.positionB = 14
+    root_node.positionC = 15
+    total_expanded = -1
+    root_node.action = "No action"  # Change action
+
+    stack = [root_node]
+
+    while True:
+        current_node = stack.pop()
+
+        total_expanded += 1
+        print("Nodes expanded: " + str(total_expanded))
+        print("Current Node depth: " + str(current_node.depth) + " Action done: " + current_node.action)
+
+        if reached_goal(current_node):
+            print("Algorithm complete")
+            break
+
+        shuffled_moves = get_legal_moves(current_node)
+        random.shuffle(shuffled_moves)
+        if (current_node.depth < max_depth):
+            for i in shuffled_moves:
+                stack.append(construct_node(current_node, i))
+
+
+
+
+
 
 
 
@@ -232,4 +304,4 @@ def bfs():
             break
 
 
-bfs()
+dfs()
