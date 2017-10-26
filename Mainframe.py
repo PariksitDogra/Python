@@ -358,7 +358,7 @@ def heuristic(node):
         steps_a = 1
     elif node.positionA in [1, 3, 8, 9, 11, 14]:
         steps_a = 2
-    elif node.positionA in [4, 12, 13]:
+    elif node.positionA in [4, 12, 13, 15]:
         steps_a = 3
     elif node.positionA in [16]:
         steps_a = 4
@@ -372,7 +372,7 @@ def heuristic(node):
     elif node.positionB in [4]:
         steps_b = 4
 
-    if node.positionC in [10, 13, 14, 15]:
+    if node.positionC in [10, 13, 15]:
         steps_c = 1
 
     elif node.positionC in [6, 9, 11, 16]:
@@ -413,6 +413,8 @@ def a_star():
             priority.put((compare, {new_node}))
             print("Nodes expanded: " + str(nodes_expanded))
             print("Current Node depth: " + str(new_node.depth) + " Action done: " + new_node.action)
+            print()
+
             if reached_goal(new_node):
                 print("Algorithm complete")
                 return
