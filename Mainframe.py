@@ -1,5 +1,5 @@
-import sys
 import random
+import queue
 
 
 #
@@ -148,6 +148,23 @@ def get_legal_moves(node):
     return legalMoves
 
 
+def get_legal_movesa(node):
+    legalMoves = []
+    if check_move_up(node):
+        legalMoves.append("Move Up")
+
+    if check_move_down(node):
+        legalMoves.append("Move Down")
+
+    if check_move_left(node):
+        legalMoves.append("Move Left")
+
+    if check_move_right(node):
+        legalMoves.append("Move Right")
+
+    return legalMoves
+
+
 class Node(object):
     # node  has state object, stores the state of the board at that node
 
@@ -234,8 +251,8 @@ def dfs_limited_search(max_depth=15):
 
     while True:
         current_node = stack.pop()
-
-        total_expanded += 1
+        if (current_node.depth < max_depth):
+            total_expanded += 1
         print("Nodes expanded: " + str(total_expanded))
         print("Current Node depth: " + str(current_node.depth) + " Action done: " + current_node.action)
 
@@ -245,15 +262,43 @@ def dfs_limited_search(max_depth=15):
 
         shuffled_moves = get_legal_moves(current_node)
         random.shuffle(shuffled_moves)
-        if (current_node.depth < max_depth):
+
+        for i in shuffled_moves:
+            stack.append(construct_node(current_node, i))
+
+
+def ids(expanded, max_depth):
+    root_node = Node()
+    root_node.depth = 0
+
+    root_node.positionHappyMan = 16
+    root_node.positionA = 13
+    root_node.positionB = 14
+    root_node.positionC = 15
+    total_expanded = expanded
+    root_node.action = "No action"  # Change action
+
+    stack = [root_node]
+
+    while stack:
+        current_node = stack.pop()
+        if current_node.depth < max_depth:
+            if current_node.depth != 0:
+                total_expanded += 1
+            print("Nodes expanded: " + str(total_expanded))
+            print("Current Node depth: " + str(current_node.depth) + " Action done: " + current_node.action)
+            print()
+
+            if reached_goal(current_node):
+                print("Algorithm complete")
+                return
+
+            shuffled_moves = get_legal_moves(current_node)
+            random.shuffle(shuffled_moves)
+
             for i in shuffled_moves:
                 stack.append(construct_node(current_node, i))
-
-
-
-
-
-
+    ids(total_expanded, max_depth + 1)
 
 
 def bfs():
@@ -272,7 +317,6 @@ def bfs():
     root_node.moves_to_do = get_legal_moves(root_node)
     tree_expanded.append(root_node)
 
-    # while not reached_goal(nodes_expanded[-1]):
     while True:
         for i in range(last_node_index, len(tree_expanded)):
             if len(tree_expanded[i].nodes_have_expanded) < len(tree_expanded[i].moves_to_do):
@@ -304,4 +348,74 @@ def bfs():
             break
 
 
-dfs()
+# Returns the number of steps required to shift the blocks A, B, C into their goal state
+def heuristic(node):
+    steps_a = 0
+    steps_b = 0
+    steps_c = 0
+
+    if node.positionA in [2, 5, 7, 10]:
+        steps_a = 1
+    elif node.positionA in [1, 3, 8, 9, 11, 14]:
+        steps_a = 2
+    elif node.positionA in [4, 12, 13]:
+        steps_a = 3
+    elif node.positionA in [16]:
+        steps_a = 4
+
+    if node.positionB in [6, 9, 11, 14]:
+        steps_b = 1
+    elif node.positionB in [2, 5, 7, 12, 13, 15]:
+        steps_b = 2
+    elif node.positionB in [1, 3, 8, 16]:
+        steps_b = 3
+    elif node.positionB in [4]:
+        steps_b = 4
+
+    if node.positionC in [10, 13, 14, 15]:
+        steps_c = 1
+
+    elif node.positionC in [6, 9, 11, 16]:
+        steps_c = 2
+
+    elif node.positionC in [2, 5, 7, 12]:
+        steps_c = 3
+
+    elif node.positionC in [1, 3, 8]:
+        steps_c = 4
+    elif node.positionC in [4]:
+        steps_c = 5
+
+    sum_of_distances = sum([steps_a, steps_b, steps_c])
+
+    return sum_of_distances
+
+
+def a_star():
+    root_node = Node()
+    root_node.depth = 0
+    nodes_expanded = 0
+    root_node.positionHappyMan = 16
+    root_node.positionA = 13
+    root_node.positionB = 14
+    root_node.positionC = 15
+    root_node.moves_to_do = get_legal_moves(root_node)
+
+    priority = queue.PriorityQueue()
+    priority.put((0, {root_node}))
+
+    while priority:
+        current_node = priority.get()[1].pop()
+        for move in current_node.moves_to_do:
+            nodes_expanded += 1
+            new_node = construct_node(current_node, move)
+            compare = new_node.depth + heuristic(new_node)
+            priority.put((compare, {new_node}))
+            print("Nodes expanded: " + str(nodes_expanded))
+            print("Current Node depth: " + str(new_node.depth) + " Action done: " + new_node.action)
+            if reached_goal(new_node):
+                print("Algorithm complete")
+                return
+
+
+a_star()
